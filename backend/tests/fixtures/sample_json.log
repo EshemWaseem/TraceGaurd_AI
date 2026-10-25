@@ -1,0 +1,12 @@
+{"timestamp": "2024-01-15T10:00:00Z", "level": "INFO", "message": "Application started", "service": "api-gateway"}
+{"timestamp": "2024-01-15T10:01:00Z", "level": "INFO", "message": "Health check passed", "service": "api-gateway"}
+{"timestamp": "2024-01-15T10:02:00Z", "level": "ERROR", "message": "Database connection timeout after 5000ms", "service": "db-connector"}
+{"timestamp": "2024-01-15T10:02:05Z", "level": "WARN", "message": "Retrying database connection (attempt 1)", "service": "db-connector"}
+{"timestamp": "2024-01-15T10:02:10Z", "level": "ERROR", "message": "Database connection timeout after 5000ms", "service": "db-connector"}
+{"timestamp": "2024-01-15T10:02:15Z", "level": "WARN", "message": "Retrying database connection (attempt 2)", "service": "db-connector"}
+this line is not valid json and should be flagged as unrecognised
+{"timestamp": "2024-01-15T10:02:20Z", "level": "ERROR", "message": "Database connection timeout after 5000ms", "service": "db-connector"}
+{"timestamp": "2024-01-15T10:02:30Z", "level": "ERROR", "message": "HTTP 500 Internal Server Error", "service": "api-gateway"}
+{"timestamp": "2024-01-15T10:02:31Z", "level": "ERROR", "message": "HTTP 500 Internal Server Error", "service": "api-gateway"}
+{"timestamp": "2024-01-15T10:02:32Z", "level": "ERROR", "message": "HTTP 500 Internal Server Error", "service": "api-gateway"}
+{"level": "ERROR", "message": "Event with no timestamp", "service": "api-gateway"}
