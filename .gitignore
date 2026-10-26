@@ -1,34 +1,102 @@
-# Private learning context — never committed
-devpost/learner-profile.md
+# ==============================================================================
+# TraceGuard AI — Comprehensive .gitignore
+# ==============================================================================
 
-# Secrets
+# --- Secrets & Environment Files ---
 .env
 .env.*
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
 !.env.example
 
-# Python
+# Credentials, Keys, and Certificates
+*.pem
+*.key
+*.cert
+*.crt
+*.pfx
+*.p12
+*.kdbx
+*.credentials
+credentials.json
+client_secret*.json
+
+# --- Python & Virtual Environments ---
 __pycache__/
 *.py[cod]
+*$py.class
 *.pyo
 .venv/
 venv/
+env/
+ENV/
 *.egg-info/
+.installed.cfg
+*.egg
 .pytest_cache/
 .mypy_cache/
-dist/
-build/
+.ruff_cache/
 htmlcov/
 .coverage
+.coverage.*
+.tox/
+.nox/
 
-# Node / Frontend
+# --- Node.js & Frontend ---
 node_modules/
+dist/
+build/
 frontend/dist/
 frontend/.vite/
+frontend/node_modules/
+dist-ssr/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
 
-# OS / Editor
+# --- Databases & Runtime Output ---
+*.db
+*.db-journal
+*.sqlite
+*.sqlite3
+postgres_data/
+*.sql.gz
+
+# --- Application & Runtime Logs (Preserve test fixtures) ---
+logs/
+*.log
+!backend/app/fixtures/*.log
+!backend/tests/fixtures/*.log
+!backend/tests/fixtures/**/*.log
+
+# --- IDEs, Editors & Operating System ---
 .DS_Store
+.DS_Store?
+._*
 Thumbs.db
+ehthumbs.db
+desktop.ini
 .idea/
 .vscode/
 *.swp
 *.swo
+*~
+*.bak
+
+# --- AI Tooling, Local Agent State & Media Recordings ---
+.gemini/
+.cursor/
+.copilot/
+*.recording.*
+*.mp4
+*.webm
+*.webp
+!frontend/public/*.webp
+!frontend/src/assets/*.webp
+
+# --- Hackathon Platform Private Context ---
+devpost/learner-profile.md

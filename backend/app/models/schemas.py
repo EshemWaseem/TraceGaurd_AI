@@ -30,6 +30,7 @@ class Anomaly(BaseModel):
     matched_rule: MatchedRule
     evidence_line_numbers: list[int]
     supporting_line_count: int
+    relationship: Literal["main_finding", "related_evidence", "additional_pattern"] = "main_finding"
 
 
 class Hypothesis(BaseModel):

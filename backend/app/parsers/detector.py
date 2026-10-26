@@ -65,9 +65,28 @@ def detect_format(content: str, sample_lines: int = 50) -> LogFormat:
         for fmt, score in _score_line(line).items():
             totals[fmt] += score
 
-    threshold = 0.8 * len(lines)
-    for fmt in ("json_application", "nginx_apache", "plaintext"):
-        if totals[fmt] >= threshold:
-            return fmt  # type: ignore[return-value]
+    # Find format with highest match score
+    max_score = max(totals.values())
+    if max_score <= 0:
+        return "unknown"
 
-    return "unknown"
+    # In case of tie between candidate formats, neither is dominant
+    top_formats = [fmt for fmt, score in totals.items() if score == max_score]
+    if len(top_formats) != 1:
+        return "unknown"
+
+    dominant_fmt = top_formats[0]
+
+    # Dominance thresholds:
+    # 1 line: must match (1/1 = 100%)
+    # 2 lines: must both match (2/2 = 100%) — 1 valid + 1 invalid is ambiguous 50%
+    # >= 3 lines: must match >= 60% of sample
+    total_lines = len(lines)
+    if total_lines == 1 and max_score < 1:
+        return "unknown"
+    if total_lines == 2 and max_score < 2:
+        return "unknown"
+    if total_lines >= 3 and (max_score / total_lines) < 0.60:
+        return "unknown"
+
+    return dominant_fmt
