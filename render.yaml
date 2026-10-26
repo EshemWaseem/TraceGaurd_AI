@@ -1,4 +1,8 @@
 # Render Infrastructure as Code Blueprint for TraceGuard AI
+# NOTE: If your PostgreSQL database 'traceguard-db' was already created manually
+# in the Render Dashboard, you can either:
+# 1. Create a Web Service directly in Render Dashboard (pointing to backend rootDir), OR
+# 2. Use this Blueprint.
 services:
   - type: web
     name: traceguard-backend
@@ -6,7 +10,7 @@ services:
     rootDir: backend
     plan: free
     buildCommand: pip install -r requirements.txt
-    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    startCommand: python -m alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port $PORT
     healthCheckPath: /api/health
     envVars:
       - key: PYTHON_VERSION

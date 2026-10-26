@@ -30,6 +30,8 @@ import {
   ZapIcon,
 } from './components/Icons'
 
+const CONFIGURED_API_URL = (import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL || '').replace(/\/$/, '')
+
 export interface UserOut {
   id: string
   email: string
@@ -250,8 +252,8 @@ function Header({
               : healthy === 'db_offline'
               ? 'Log analysis engine is ready. Workspace persistence and authentication are offline (database disconnected).'
               : healthy === 'backend_offline'
-              ? (import.meta.env.VITE_API_BASE_URL
-                  ? `TraceGuard backend API at ${import.meta.env.VITE_API_BASE_URL} is unreachable. If hosted on Render free tier, it may take ~30-50s to wake up.`
+              ? (CONFIGURED_API_URL
+                  ? `TraceGuard backend API at ${CONFIGURED_API_URL} is unreachable. If hosted on Render free tier, it may take ~30-50s to wake up.`
                   : 'TraceGuard backend API is unreachable on port 8010. Please start the backend service.')
               : 'Verifying system connectivity…'
           }
@@ -1472,8 +1474,8 @@ export default function App() {
               <AlertTriangleIcon size={18} color="var(--error)" />
               <div>
                 <strong>Backend Service Offline:</strong>{' '}
-                {import.meta.env.VITE_API_BASE_URL ? (
-                  <>Could not connect to the TraceGuard API at <code>{import.meta.env.VITE_API_BASE_URL}</code>. If using Render free tier, the backend may take 30–50s to wake up from cold start — please refresh or wait a moment.</>
+                {CONFIGURED_API_URL ? (
+                  <>Could not connect to the TraceGuard API at <code>{CONFIGURED_API_URL}</code>. If using Render free tier, the backend may take 30–50s to wake up from cold start — please refresh or wait a moment.</>
                 ) : (
                   <>Could not connect to the TraceGuard API on port 8010. Please start the backend service (<code>python -m uvicorn app.main:app --port 8010</code>) to analyze logs or save investigations.</>
                 )}

@@ -34,6 +34,7 @@ from starlette.responses import Response
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.get_cors_origins(),
+    allow_origin_regex=r"https://.*\.vercel\.app",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -69,11 +70,16 @@ async def security_and_correlation_middleware(request: Request, call_next):
         "script-src 'self' 'unsafe-inline'; "
         "style-src 'self' 'unsafe-inline'; "
         "img-src 'self' data:; "
-        "connect-src 'self' http://localhost:* http://127.0.0.1:* ws://localhost:* ws://127.0.0.1:*; "
+        "connect-src 'self' https: http://localhost:* http://127.0.0.1:* ws://localhost:* ws://127.0.0.1:*; "
         "frame-ancestors 'none';"
     )
 
     return response
+
+# Liveness healthcheck at root (standard for cloud load balancers and Render)
+@app.get("/health", tags=["Health"])
+async def root_health() -> dict:
+    return {"status": "ok"}
 
 # Detailed database status endpoint
 @app.get("/api/health/db", tags=["Health"])
