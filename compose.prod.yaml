@@ -5,9 +5,9 @@ services:
     container_name: traceguard-db
     restart: unless-stopped
     environment:
-      POSTGRES_USER: ${POSTGRES_USER:?POSTGRES_USER is required in .env}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required in .env}
-      POSTGRES_DB: ${POSTGRES_DB:?POSTGRES_DB is required in .env}
+      POSTGRES_USER: ${POSTGRES_USER:-traceguard_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-traceguard_prod_pass}
+      POSTGRES_DB: ${POSTGRES_DB:-traceguard_db}
       POSTGRES_INITDB_ARGS: "--auth-host=scram-sha-256 --auth-local=scram-sha-256"
     ports:
       - "127.0.0.1:5434:5432"
@@ -36,13 +36,13 @@ services:
       db:
         condition: service_healthy
     environment:
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER:-traceguard_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-traceguard_prod_pass}
+      POSTGRES_DB: ${POSTGRES_DB:-traceguard_db}
       POSTGRES_HOST: db
       POSTGRES_PORT: 5432
-      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
-      SECRET_KEY: ${SECRET_KEY:?SECRET_KEY is required in .env}
+      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-traceguard_user}:${POSTGRES_PASSWORD:-traceguard_prod_pass}@db:5432/${POSTGRES_DB:-traceguard_db}
+      SECRET_KEY: ${SECRET_KEY:-ci_prod_secret_key_at_least_32_chars_long}
       ALGORITHM: ${ALGORITHM:-HS256}
       ACCESS_TOKEN_EXPIRE_MINUTES: ${ACCESS_TOKEN_EXPIRE_MINUTES:-1440}
     ports:
