@@ -110,11 +110,19 @@ auth_rate_limiter = InMemoryRateLimiter()
 
 import ipaddress
 
-_DOCKER_BRIDGE_NET = ipaddress.ip_network("172.16.0.0/12")
+_TRUSTED_PROXY_NETWORKS = (
+    ipaddress.ip_network("10.0.0.0/8"),
+    ipaddress.ip_network("172.16.0.0/12"),
+    ipaddress.ip_network("192.168.0.0/16"),
+)
 
 
 def _is_trusted_peer(peer_str: str) -> bool:
-    """Determine whether direct peer is an authorized reverse proxy."""
+    """Determine whether direct peer is an authorized reverse proxy.
+    
+    Loopback and RFC 1918 private network addresses (Docker bridge, Kubernetes pod networks,
+    Render internal proxies) are considered trusted reverse proxies.
+    """
     if peer_str in ("localhost", "testclient"):
         return True
     try:
@@ -124,7 +132,7 @@ def _is_trusted_peer(peer_str: str) -> bool:
 
     if ip.is_loopback:
         return True
-    if ip in _DOCKER_BRIDGE_NET:
+    if any(ip in net for net in _TRUSTED_PROXY_NETWORKS):
         return True
 
     # Check explicitly configured TRUSTED_PROXIES from environment if defined
@@ -146,18 +154,26 @@ def _is_trusted_peer(peer_str: str) -> bool:
 def get_trusted_client_ip(request) -> str:
     """Extract client IP safely.
 
-    Only honors X-Real-IP or X-Forwarded-For when the direct peer
-    (request.client.host) is an authorized reverse proxy (loopback or Docker bridge subnet).
-    Otherwise, returns direct peer host to prevent IP header spoofing.
+    Only honors proxy headers (CF-Connecting-IP, X-Real-IP, X-Forwarded-For) when the direct
+    peer (request.client.host) is an authorized reverse proxy (loopback or private cloud subnet).
+    Otherwise, returns direct peer host to prevent IP header spoofing from untrusted public peers.
     Validates that forwarded values are syntactically valid IPv4 or IPv6 addresses.
-    When multiple forwarded proxies are present in X-Forwarded-For, walks the proxy chain
-    from right to left to select the first untrusted upstream client address.
     """
     peer = request.client.host if request.client else "unknown"
     if not _is_trusted_peer(peer):
         return peer
 
-    # 1. Prefer X-Real-IP if provided by trusted Nginx reverse proxy
+    # 1. Prefer CF-Connecting-IP if provided by Cloudflare edge (e.g. Render infrastructure)
+    cf_ip = request.headers.get("CF-Connecting-IP")
+    if cf_ip:
+        cf_ip = cf_ip.strip()
+        try:
+            ipaddress.ip_address(cf_ip)
+            return cf_ip
+        except ValueError:
+            pass
+
+    # 2. Prefer X-Real-IP if provided by trusted Nginx reverse proxy
     real_ip = request.headers.get("X-Real-IP")
     if real_ip:
         real_ip = real_ip.strip()
@@ -167,7 +183,7 @@ def get_trusted_client_ip(request) -> str:
         except ValueError:
             pass
 
-    # 2. Inspect X-Forwarded-For header (client is the leftmost entry in standard proxy forwarding)
+    # 3. Inspect X-Forwarded-For header (client is the leftmost entry in standard proxy forwarding)
     forwarded = request.headers.get("X-Forwarded-For")
     if forwarded:
         candidate = forwarded.split(",")[0].strip()

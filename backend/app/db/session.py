@@ -83,13 +83,17 @@ def get_db() -> Generator:
 
 
 def check_db_health() -> dict:
-    """Healthcheck helper for database status without exposing secrets or credentials."""
+    """Healthcheck helper for database status without exposing internal infrastructure details in production."""
     target_host = engine.url.host or "unknown"
     target_port = engine.url.port or 5432
     backend_type = "sqlite" if "sqlite" in (engine.url.drivername or "") else "postgresql"
+    is_prod = getattr(settings, "ENVIRONMENT", "development") == "production"
+
     try:
         with engine.connect() as conn:
             conn.execute(text("SELECT 1"))
+        if is_prod:
+            return {"status": "connected"}
         return {
             "status": "connected",
             "backend": backend_type,
@@ -98,6 +102,9 @@ def check_db_health() -> dict:
         }
     except Exception as exc:
         err_str = str(exc).lower()
+        if is_prod:
+            return {"status": "error", "message": "Database connectivity check failed."}
+
         if "password authentication failed" in err_str:
             msg = "PostgreSQL authentication failed."
         elif "connection refused" in err_str or "could not connect" in err_str:

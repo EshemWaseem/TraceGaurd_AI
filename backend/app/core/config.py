@@ -91,13 +91,17 @@ class Settings:
     COOKIE_SECURE: bool = os.getenv("COOKIE_SECURE", "false").lower() in ("true", "1", "yes")
     COOKIE_SAMESITE: str = "lax"
 
+    # API Documentation exposure toggle
+    ENABLE_PUBLIC_DOCS: bool = os.getenv("ENABLE_PUBLIC_DOCS", "false").lower() in ("true", "1", "yes")
+
     # Network & Reverse Proxy settings
     TRUSTED_PROXIES: str = os.getenv("TRUSTED_PROXIES", "")
     CORS_ORIGINS: str = os.getenv("CORS_ORIGINS", "")
 
     def get_cors_origins(self) -> List[str]:
-        """Return configured CORS origins with safe localhost/container defaults."""
+        """Return configured CORS origins with safe localhost/container defaults and canonical frontend."""
         defaults = [
+            "https://trace-gaurd-ai.vercel.app",  # Canonical live production frontend
             "http://localhost:5173",  # Vite dev
             "http://127.0.0.1:5173",  # Vite dev IP
             "http://localhost:4173",  # Vite preview

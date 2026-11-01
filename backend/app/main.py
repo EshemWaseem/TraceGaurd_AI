@@ -18,11 +18,16 @@ async def lifespan(app: FastAPI):
     yield
 
 
+_is_prod = settings.ENVIRONMENT == "production" and not getattr(settings, "ENABLE_PUBLIC_DOCS", False)
+
 app = FastAPI(
     title=settings.PROJECT_NAME,
     version=settings.VERSION,
     description="Deterministic incident investigation workspace with secure authentication and multi-tenancy.",
     lifespan=lifespan,
+    docs_url=None if _is_prod else "/docs",
+    redoc_url=None if _is_prod else "/redoc",
+    openapi_url=None if _is_prod else "/openapi.json",
 )
 
 import re
@@ -34,7 +39,7 @@ from starlette.responses import Response
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.get_cors_origins(),
-    allow_origin_regex=r"https://.*\.vercel\.app",
+    allow_origin_regex=r"^https://trace-gaurd-ai(-[a-z0-9]+)*\.vercel\.app$",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
